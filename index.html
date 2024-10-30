@@ -27,7 +27,7 @@
 
     <script>
         // Variables for interactions
-        let moon = document.getElementById('moon');
+        const moon = document.getElementById('moon');
         let scale = 1; // Default scale for the moon
         let isDragging = false;
         let initialTouchX = 0;
@@ -57,6 +57,7 @@
                 isDragging = true;
                 initialTouchX = event.touches[0].clientX;
                 initialTouchY = event.touches[0].clientY;
+                event.preventDefault(); // Prevent default scrolling
             }
         });
 
