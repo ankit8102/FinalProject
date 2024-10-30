@@ -6,8 +6,11 @@
     <title>Interactive Luminous and Draggable Moon Model with Custom Marker</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+    </style>
 </head>
-<body style="margin: 0; overflow: hidden;">
+<body>
     <a-scene embedded arjs>
         <!-- Custom marker -->
         <a-marker type="pattern" url="ankitm.patt">
@@ -15,9 +18,10 @@
             <a-sphere id="moon"
                       radius="1"
                       position="0 0.5 0"
-                      rotation="0 45 0"
-                      src="moon.jpg"  
-                      material="color: #ffffff; emissive: #aaaaaa; emissiveIntensity: 0.5; roughness: 0.9; metalness: 0.1">
+                      rotation="0 0 0"
+                      src="moon.jpg"
+                      material="color: #ffffff; emissive: #aaaaaa; emissiveIntensity: 0.5; roughness: 0.9; metalness: 0.1"
+                      draggable>
             </a-sphere>
         </a-marker>
 
@@ -52,25 +56,28 @@
         });
 
         // Touch event for dragging and spinning
-        moon.addEventListener('touchstart', (event) => {
-            if (event.touches.length === 1) { // Single touch for dragging
-                isDragging = true;
-                initialTouchX = event.touches[0].clientX;
-                initialTouchY = event.touches[0].clientY;
-                event.preventDefault(); // Prevent default scrolling
-            }
-        });
+        moon.addEventListener('mousedown', startDrag);
+        moon.addEventListener('touchstart', startDrag);
 
-        moon.addEventListener('touchmove', (event) => {
-            if (isDragging && event.touches.length === 1) {
-                const deltaX = event.touches[0].clientX - initialTouchX;
-                const deltaY = event.touches[0].clientY - initialTouchY;
+        moon.addEventListener('mousemove', dragMoon);
+        moon.addEventListener('touchmove', dragMoon);
 
-                // Update initial positions for smooth dragging
-                initialTouchX = event.touches[0].clientX;
-                initialTouchY = event.touches[0].clientY;
+        moon.addEventListener('mouseup', endDrag);
+        moon.addEventListener('touchend', endDrag);
 
-                // Update moon position to simulate dragging
+        function startDrag(event) {
+            isDragging = true;
+            initialTouchX = event.touches ? event.touches[0].clientX : event.clientX;
+            initialTouchY = event.touches ? event.touches[0].clientY : event.clientY;
+            event.preventDefault(); // Prevent default scrolling
+        }
+
+        function dragMoon(event) {
+            if (isDragging) {
+                const deltaX = (event.touches ? event.touches[0].clientX : event.clientX) - initialTouchX;
+                const deltaY = (event.touches ? event.touches[0].clientY : event.clientY) - initialTouchY;
+
+                // Update position
                 moonPosition.x += deltaX * 0.005; // Adjust multiplier for drag sensitivity
                 moonPosition.y -= deltaY * 0.005; // Invert Y-axis for natural dragging
                 moon.setAttribute('position', `${moonPosition.x} ${moonPosition.y} ${moonPosition.z}`);
@@ -79,12 +86,16 @@
                 let rotation = moon.getAttribute('rotation');
                 rotation.y += deltaX * 0.5; // Adjust for spin sensitivity
                 moon.setAttribute('rotation', rotation);
-            }
-        });
 
-        moon.addEventListener('touchend', () => {
+                // Update initial positions for smooth dragging
+                initialTouchX = event.touches ? event.touches[0].clientX : event.clientX;
+                initialTouchY = event.touches ? event.touches[0].clientY : event.clientY;
+            }
+        }
+
+        function endDrag() {
             isDragging = false;
-        });
+        }
     </script>
 </body>
 </html>
