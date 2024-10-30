@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Luminous Moon Model with Custom Marker</title>
+    <title>Interactive Luminous and Draggable Moon Model with Custom Marker</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
 </head>
@@ -16,7 +16,7 @@
                       radius="1"
                       position="0 0.5 0"
                       rotation="0 45 0"
-                      src="moon.jpg" 
+                      src="path/to/your-moon-image.jpg"  <!-- Replace with your image path -->
                       material="color: #ffffff; emissive: #aaaaaa; emissiveIntensity: 0.5; roughness: 0.9; metalness: 0.1">
             </a-sphere>
         </a-marker>
@@ -26,15 +26,17 @@
     </a-scene>
 
     <script>
-        // Interaction variables
+        // Variables for interactions
         let moon = document.getElementById('moon');
         let scale = 1; // Default scale for the moon
         let isDragging = false;
-        let previousX = 0;
+        let initialTouchX = 0;
+        let initialTouchY = 0;
+        let moonPosition = { x: 0, y: 0.5, z: 0 }; // Initial position of the moon
 
         // Pinch/Zoom event for scaling
         document.addEventListener('touchmove', (event) => {
-            if (event.touches.length === 2) {  // Detect two-finger gesture
+            if (event.touches.length === 2) {  // Detect two-finger gesture for zoom
                 const touch1 = event.touches[0];
                 const touch2 = event.touches[1];
                 
@@ -49,22 +51,32 @@
             }
         });
 
-        // Single finger drag event for rotation
+        // Touch event for dragging and spinning
         moon.addEventListener('touchstart', (event) => {
-            if (event.touches.length === 1) {
+            if (event.touches.length === 1) { // Single touch for dragging
                 isDragging = true;
-                previousX = event.touches[0].clientX;
+                initialTouchX = event.touches[0].clientX;
+                initialTouchY = event.touches[0].clientY;
             }
         });
 
         moon.addEventListener('touchmove', (event) => {
             if (isDragging && event.touches.length === 1) {
-                const deltaX = event.touches[0].clientX - previousX;
-                previousX = event.touches[0].clientX;
+                const deltaX = event.touches[0].clientX - initialTouchX;
+                const deltaY = event.touches[0].clientY - initialTouchY;
 
-                // Rotate moon based on drag movement
+                // Update initial positions for smooth dragging
+                initialTouchX = event.touches[0].clientX;
+                initialTouchY = event.touches[0].clientY;
+
+                // Update moon position to simulate dragging
+                moonPosition.x += deltaX * 0.005; // Adjust multiplier for drag sensitivity
+                moonPosition.y -= deltaY * 0.005; // Invert Y-axis for natural dragging
+                moon.setAttribute('position', `${moonPosition.x} ${moonPosition.y} ${moonPosition.z}`);
+
+                // Rotate the moon based on horizontal movement for spinning effect
                 let rotation = moon.getAttribute('rotation');
-                rotation.y += deltaX * 0.5; // Adjust sensitivity with multiplier
+                rotation.y += deltaX * 0.5; // Adjust for spin sensitivity
                 moon.setAttribute('rotation', rotation);
             }
         });
