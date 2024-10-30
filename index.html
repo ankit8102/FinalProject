@@ -1,72 +1,76 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive AR Model</title>
+    <title>Interactive AR Moon Model with Custom Marker</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
 </head>
 <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs>
-        <!-- Marker for AR model tracking -->
-        <a-marker preset="hiro">
-            <!-- Add the interactive model with a default scale -->
-            <a-entity id="model" gltf-model="url(path/to/your-model.glb)"
-                      scale="0.5 0.5 0.5" position="0 0 0"></a-entity>
+        <!-- Custom marker -->
+        <a-marker type="pattern" url="ankitm.patt">
+            <!-- Interactive Moon Sphere -->
+            <a-sphere id="moon"
+                      radius="1"
+                      position="0 0.5 0"
+                      rotation="0 45 0"
+                      src="https://cdn.aframe.io/360-image-gallery-boilerplate/img/moon.jpg"
+                      roughness="1"
+                      metalness="0.5">
+            </a-sphere>
         </a-marker>
-        
+
         <!-- AR Camera -->
         <a-entity camera></a-entity>
     </a-scene>
 
     <script>
         // Interaction variables
-        let model = document.getElementById('model');
-        let initialScale = 0.5; // Base scale for the model
-        let scale = initialScale;
+        let moon = document.getElementById('moon');
+        let scale = 1; // Default scale for the moon
         let isDragging = false;
         let previousX = 0;
 
-        // Pinch/Zoom event
+        // Pinch/Zoom event for scaling
         document.addEventListener('touchmove', (event) => {
-            if (event.touches.length === 2) {  // Check for two fingers
+            if (event.touches.length === 2) {  // Detect two-finger gesture
                 const touch1 = event.touches[0];
                 const touch2 = event.touches[1];
                 
-                // Calculate the distance between touches
+                // Calculate the distance between the two touch points
                 const dx = touch1.pageX - touch2.pageX;
                 const dy = touch1.pageY - touch2.pageY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Scale model based on distance between fingers
-                scale = Math.max(0.1, Math.min(2, distance / 200)); // Scale limit between 0.1 and 2
-                model.setAttribute('scale', `${scale} ${scale} ${scale}`);
+                // Scale model based on the pinch distance
+                scale = Math.max(0.5, Math.min(2, distance / 200)); // Scale between 0.5 and 2
+                moon.setAttribute('scale', `${scale} ${scale} ${scale}`);
             }
         });
 
         // Single finger drag event for rotation
-        model.addEventListener('touchstart', (event) => {
+        moon.addEventListener('touchstart', (event) => {
             if (event.touches.length === 1) {
                 isDragging = true;
                 previousX = event.touches[0].clientX;
             }
         });
 
-        model.addEventListener('touchmove', (event) => {
+        moon.addEventListener('touchmove', (event) => {
             if (isDragging && event.touches.length === 1) {
                 const deltaX = event.touches[0].clientX - previousX;
                 previousX = event.touches[0].clientX;
 
-                // Rotate model based on drag distance
-                let rotation = model.getAttribute('rotation');
-                rotation.y += deltaX * 0.5;
-                model.setAttribute('rotation', rotation);
+                // Rotate moon based on drag movement
+                let rotation = moon.getAttribute('rotation');
+                rotation.y += deltaX * 0.5; // Adjust sensitivity with multiplier
+                moon.setAttribute('rotation', rotation);
             }
         });
 
-        model.addEventListener('touchend', () => {
+        moon.addEventListener('touchend', () => {
             isDragging = false;
         });
     </script>
